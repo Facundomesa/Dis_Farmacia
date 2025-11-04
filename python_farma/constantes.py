@@ -1,0 +1,12 @@
+
+# --- Descuentos ---
+DTO_JUBILADO = 0.40  # 40%
+DTO_OBRA_SOCIAL = 0.20 # 20%
+DTO_SIN_DESCUENTO = 0.0 # 0%
+
+# --- Stock ---
+UMBRAL_MINIMO_STOCK_MEDICAMENTOS = 10
+UMBRAL_MINIMO_STOCK_GENERAL = 5
+
+# --- Impuestos ---
+TASA_IVA_GENERAL = 0.21
