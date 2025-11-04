@@ -12,7 +12,6 @@ class ProductoFactory:
         "MedicamentoConReceta": tipos_producto.MedicamentoConReceta,
         "MedicamentoOTC": tipos_producto.MedicamentoOTC,
         "Perfumeria": tipos_producto.Perfumeria,
-        # --- NUEVA LÍNEA (OPCIÓN 3) ---
         "SuplementoDietario": tipos_producto.SuplementoDietario
     }
 
