@@ -34,3 +34,13 @@ class Perfumeria(Producto):
     @property
     def descuento_promocion(self) -> float:
         return self._descuento_promocion
+
+# --- NUEVA CLASE (OPCIÓN 3) ---
+class SuplementoDietario(Producto):
+    """Producto tipo Suplemento Dietario."""
+    def __init__(self, nombre: str, precio_base: float, stock: int):
+        super().__init__(nombre, precio_base, stock)
+        self._requiere_consulta = False
+        
+    def get_tipo_producto(self) -> str:
+        return "SuplementoDietario"
