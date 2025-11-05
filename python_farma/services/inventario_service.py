@@ -1,23 +1,30 @@
+import queue
 from typing import List, Dict
 from python_farma.entidades.producto import Producto
-from python_farma.patrones.observer.observable import Observable
 from python_farma.patrones.factory.producto_factory import ProductoFactory
 from python_farma.excepciones.stock_insuficiente_excepcion import StockInsuficienteException
 
-# El evento que notificamos es un tuple: (Producto, nuevo_stock_int)
+# El evento que ponemos en la cola: (Producto, nuevo_stock_int)
 TipoEventoStock = tuple[Producto, int]
 
-class InventarioService(Observable[TipoEventoStock]):
+class InventarioService:
     """
     Gestiona el inventario de productos.
-    Es un Observable que notifica a los Observadores (ej. NotificadorStockBajo)
-    cuando el stock de un producto cambia.
+    Es un Productor: Pone eventos de stock en una cola para
+    que los Consumidores (Notificadores) los procesen asincrónicamente.
     """
     
-    def __init__(self):
-        super().__init__()
-        # Usamos un diccionario para acceso rápido por nombre
+    def __init__(self, cola_eventos_stock: queue.Queue[TipoEventoStock]):
+        """
+        Inicializa el servicio de inventario.
+        
+        Args:
+            cola_eventos_stock: La cola (Queue) donde se pondrán los
+                                eventos de cambio de stock.
+        """
         self._productos: Dict[str, Producto] = {}
+        # Recibe la cola por Inyección de Dependencias
+        self._cola_eventos = cola_eventos_stock
 
     def crear_producto(
         self, 
@@ -49,8 +56,8 @@ class InventarioService(Observable[TipoEventoStock]):
 
     def descontar_stock(self, nombre_producto: str, cantidad: int):
         """
-        Descuenta el stock de un producto y notifica a los observadores.
-        Este es el método clave que dispara el Patrón Observer.
+        Descuenta el stock de un producto y COLOCA el evento en la cola.
+        Este es el disparador del patrón Productor-Consumidor.
         """
         producto = self.get_producto(nombre_producto)
         
@@ -61,11 +68,11 @@ class InventarioService(Observable[TipoEventoStock]):
             print(f"[Inventario] Stock descontado. Producto: '{producto.nombre}', "
                   f"Stock restante: {producto.stock}")
             
-            # --- Disparador del Patrón Observer ---
-            # Notifica a todos los observadores sobre el cambio.
-            # Enviamos el objeto producto y su nuevo stock.
+            # --- Disparador del Patrón (ASINCRÓNICO) ---
+            # Pone el evento en la cola.
+            # Esto es instantáneo y no bloquea la venta.
             evento: TipoEventoStock = (producto, producto.stock)
-            self.notificar_observadores(evento)
+            self._cola_eventos.put(evento)
             # ----------------------------------------
             
         except ValueError as e:
@@ -75,3 +82,7 @@ class InventarioService(Observable[TipoEventoStock]):
                 stock_requerido=cantidad,
                 stock_disponible=producto.stock
             ) from e
+
+    # --- MÉTODO NUEVO (OPCIÓN 3) ---
+    def get_todos_los_productos(self) -> List[Producto]:
+        return list(self._productos.values())
